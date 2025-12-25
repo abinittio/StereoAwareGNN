@@ -1,0 +1,15 @@
+name: bbb
+channels:
+  - conda-forge
+  - pytorch
+  - defaults
+dependencies:
+  - python=3.10
+  - rdkit
+  - numpy
+  - pandas
+  - pytorch
+  - pip
+  - pip:
+    - streamlit
+    - torch-geometric
