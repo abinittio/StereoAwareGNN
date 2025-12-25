@@ -38,7 +38,7 @@ try:
     RDKIT_AVAILABLE = True
 except ImportError:
     RDKIT_AVAILABLE = False
-    st.error("RDKit not available. Please install: pip install rdkit")
+    st.error("RDKit not available")
 
 # PyTorch Geometric imports
 try:
