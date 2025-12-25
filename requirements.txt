@@ -5,6 +5,6 @@
 streamlit>=1.28.0
 numpy>=1.24.0
 pandas>=2.0.0
-rdkit>=2023.9.1
+rdkit-pypi
 torch>=2.0.0
 torch-geometric>=2.4.0
