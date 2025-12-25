@@ -6,7 +6,11 @@
       "Bash(/c/Users/nakhi/anaconda3/python.exe -m streamlit:*)",
       "Bash(git init:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(gh repo create:*)",
+      "Bash(git remote add:*)",
+      "Bash(git push:*)",
+      "Bash(git config:*)"
     ]
   }
 }
