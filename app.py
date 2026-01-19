@@ -570,12 +570,12 @@ def name_to_smiles_pubchem(name):
 
     try:
         response = requests.get(url, timeout=15)
-        st.write(f"DEBUG: PubChem status={response.status_code}")  # TEMP DEBUG
         if response.status_code == 200:
             data = response.json()
-            return data['PropertyTable']['Properties'][0]['IsomericSMILES']
-    except Exception as e:
-        st.write(f"DEBUG: PubChem error={e}")  # TEMP DEBUG
+            props = data['PropertyTable']['Properties'][0]
+            return props.get('IsomericSMILES') or props.get('SMILES')
+    except:
+        pass
     return None
 
 
