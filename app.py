@@ -7,6 +7,7 @@ GitHub: https://github.com/abinittio
 
 Streamlit Cloud Deployment Version - Self-Contained
 """
+APP_VERSION = "v2.1"  # PubChem fix
 
 import streamlit as st
 import pandas as pd
@@ -669,6 +670,7 @@ def main():
         st.markdown("---")
         st.markdown("**Author:** Nabil Yasini-Ardekani")
         st.markdown("[GitHub](https://github.com/abinittio)")
+        st.caption(f"Version: {APP_VERSION}")
 
     # Main input
     st.subheader("Enter Molecule")
