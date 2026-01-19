@@ -549,21 +549,28 @@ MOLECULES = {
 def name_to_smiles_pubchem(name):
     """Convert any chemical/drug name to SMILES using PubChem API."""
     try:
-        encoded_name = urllib.parse.quote(name)
-        url = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/{encoded_name}/property/IsomericSMILES/JSON"
-        response = requests.get(url, timeout=10)
+        encoded_name = urllib.parse.quote(name.strip())
+        # Try to get both IsomericSMILES and CanonicalSMILES
+        url = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/{encoded_name}/property/IsomericSMILES,CanonicalSMILES/JSON"
+        response = requests.get(url, timeout=15)
 
         if response.status_code == 200:
             data = response.json()
-            props = data['PropertyTable']['Properties'][0]
-            smiles = props.get('IsomericSMILES') or props.get('CanonicalSMILES')
-            return smiles
-    except Exception:
+            if 'PropertyTable' in data and 'Properties' in data['PropertyTable']:
+                props = data['PropertyTable']['Properties'][0]
+                smiles = props.get('IsomericSMILES') or props.get('CanonicalSMILES')
+                if smiles:
+                    return smiles
+    except requests.exceptions.Timeout:
+        pass
+    except requests.exceptions.RequestException:
+        pass
+    except (KeyError, IndexError, ValueError):
         pass
     return None
 
 
-def resolve_input(user_input):
+def resolve_input(user_input, show_status=None):
     """Resolve user input to SMILES."""
     if not user_input:
         return None, None, "Please enter a molecule"
@@ -573,21 +580,27 @@ def resolve_input(user_input):
 
     text = user_input.strip()
 
-    # Check if valid SMILES
-    if Chem.MolFromSmiles(text) is not None:
+    # Check if valid SMILES first
+    mol = Chem.MolFromSmiles(text)
+    if mol is not None:
         return text, "Custom Molecule", None
 
-    # Check database (case-insensitive)
+    # Check local database (case-insensitive)
     key = text.lower().strip()
     if key in MOLECULES:
         return MOLECULES[key][0], MOLECULES[key][1], None
 
     # Try PubChem API for any drug/chemical name
-    smiles = name_to_smiles_pubchem(text)
-    if smiles and Chem.MolFromSmiles(smiles) is not None:
-        return smiles, text.title(), None
+    if show_status:
+        show_status(f"Looking up '{text}' in PubChem...")
 
-    return None, None, f"Could not resolve '{text}'. Enter a valid SMILES or drug name."
+    smiles = name_to_smiles_pubchem(text)
+    if smiles:
+        mol = Chem.MolFromSmiles(smiles)
+        if mol is not None:
+            return smiles, text.title(), None
+
+    return None, None, f"Could not resolve '{text}'. Try entering a valid SMILES string or check the spelling of the drug name."
 
 
 # ============================================================================
@@ -684,7 +697,9 @@ def main():
                                    help="Predict all possible stereoisomers and show range")
 
     if predict_btn and user_input:
-        smiles, name, err = resolve_input(user_input)
+        status_placeholder = st.empty()
+        smiles, name, err = resolve_input(user_input, show_status=status_placeholder.info)
+        status_placeholder.empty()
 
         if err:
             st.error(err)
