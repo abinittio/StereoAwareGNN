@@ -568,10 +568,14 @@ def name_to_smiles_pubchem(name):
     encoded_name = urllib.parse.quote(clean_name)
     url = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/{encoded_name}/property/IsomericSMILES/JSON"
 
-    response = requests.get(url, timeout=15)
-    if response.status_code == 200:
-        data = response.json()
-        return data['PropertyTable']['Properties'][0]['IsomericSMILES']
+    try:
+        response = requests.get(url, timeout=15)
+        st.write(f"DEBUG: PubChem status={response.status_code}")  # TEMP DEBUG
+        if response.status_code == 200:
+            data = response.json()
+            return data['PropertyTable']['Properties'][0]['IsomericSMILES']
+    except Exception as e:
+        st.write(f"DEBUG: PubChem error={e}")  # TEMP DEBUG
     return None
 
 
