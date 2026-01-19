@@ -11,9 +11,17 @@ Streamlit Cloud Deployment Version - Self-Contained
 import streamlit as st
 import pandas as pd
 import numpy as np
-import torch
-import torch.nn as nn
 from pathlib import Path
+
+# Optional torch import
+try:
+    import torch
+    import torch.nn as nn
+    TORCH_AVAILABLE = True
+except ImportError:
+    TORCH_AVAILABLE = False
+    torch = None
+    nn = None
 from datetime import datetime
 import json
 import base64
@@ -43,11 +51,16 @@ except ImportError:
     st.error("RDKit not available")
 
 # PyTorch Geometric imports
-try:
-    from torch_geometric.nn import GATv2Conv, TransformerConv, global_mean_pool, global_max_pool
-    from torch_geometric.data import Data
-    TORCH_GEOMETRIC_AVAILABLE = True
-except ImportError:
+TORCH_GEOMETRIC_AVAILABLE = False
+if TORCH_AVAILABLE:
+    try:
+        from torch_geometric.nn import GATv2Conv, TransformerConv, global_mean_pool, global_max_pool
+        from torch_geometric.data import Data
+        TORCH_GEOMETRIC_AVAILABLE = True
+    except ImportError:
+        pass
+
+if not TORCH_GEOMETRIC_AVAILABLE:
     TORCH_GEOMETRIC_AVAILABLE = False
 
 # Custom CSS
