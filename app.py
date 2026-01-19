@@ -19,6 +19,8 @@ import json
 import base64
 import io
 import os
+import requests
+import urllib.parse
 
 # Page config - MUST be first Streamlit command
 st.set_page_config(
@@ -544,6 +546,23 @@ MOLECULES = {
 }
 
 
+def name_to_smiles_pubchem(name):
+    """Convert any chemical/drug name to SMILES using PubChem API."""
+    try:
+        encoded_name = urllib.parse.quote(name)
+        url = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/{encoded_name}/property/IsomericSMILES/JSON"
+        response = requests.get(url, timeout=10)
+
+        if response.status_code == 200:
+            data = response.json()
+            props = data['PropertyTable']['Properties'][0]
+            smiles = props.get('IsomericSMILES') or props.get('CanonicalSMILES')
+            return smiles
+    except Exception:
+        pass
+    return None
+
+
 def resolve_input(user_input):
     """Resolve user input to SMILES."""
     if not user_input:
@@ -562,6 +581,11 @@ def resolve_input(user_input):
     key = text.lower().strip()
     if key in MOLECULES:
         return MOLECULES[key][0], MOLECULES[key][1], None
+
+    # Try PubChem API for any drug/chemical name
+    smiles = name_to_smiles_pubchem(text)
+    if smiles and Chem.MolFromSmiles(smiles) is not None:
+        return smiles, text.title(), None
 
     return None, None, f"Could not resolve '{text}'. Enter a valid SMILES or drug name."
 
