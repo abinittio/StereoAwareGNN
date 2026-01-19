@@ -7,7 +7,7 @@ GitHub: https://github.com/abinittio
 
 Streamlit Cloud Deployment Version - Self-Contained
 """
-APP_VERSION = "v2.1"  # PubChem fix
+APP_VERSION = "v2.2"  # Debug errors
 
 import streamlit as st
 import pandas as pd
@@ -574,9 +574,12 @@ def name_to_smiles_pubchem(name):
         if response.status_code == 200:
             data = response.json()
             props = data['PropertyTable']['Properties'][0]
-            return props.get('IsomericSMILES') or props.get('SMILES')
-    except:
-        pass
+            smiles = props.get('IsomericSMILES') or props.get('SMILES')
+            return smiles
+        else:
+            st.error(f"PubChem returned status {response.status_code}")
+    except Exception as e:
+        st.error(f"PubChem API error: {type(e).__name__}: {e}")
     return None
 
 
