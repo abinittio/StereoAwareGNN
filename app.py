@@ -560,44 +560,18 @@ MOLECULES = {
 
 
 def name_to_smiles_pubchem(name):
-    """Convert any chemical/drug name to SMILES using PubChem API with synonym search."""
+    """Convert any chemical/drug name to SMILES using PubChem API."""
     if not name or len(name.strip()) < 2:
         return None
 
     clean_name = name.strip()
     encoded_name = urllib.parse.quote(clean_name)
+    url = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/{encoded_name}/property/IsomericSMILES/JSON"
 
-    # Method 1: Direct name lookup
-    url = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/{encoded_name}/property/IsomericSMILES,CanonicalSMILES/JSON"
-    try:
-        response = requests.get(url, timeout=10)
-        if response.status_code == 200:
-            data = response.json()
-            props = data.get('PropertyTable', {}).get('Properties', [{}])[0]
-            smiles = props.get('IsomericSMILES') or props.get('CanonicalSMILES')
-            if smiles:
-                return smiles
-    except:
-        pass
-
-    # Method 2: Search by synonym (finds more names)
-    search_url = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/{encoded_name}/cids/JSON"
-    try:
-        response = requests.get(search_url, timeout=10)
-        if response.status_code == 200:
-            data = response.json()
-            cids = data.get('IdentifierList', {}).get('CID', [])
-            if cids:
-                cid = cids[0]
-                prop_url = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/{cid}/property/IsomericSMILES/JSON"
-                prop_resp = requests.get(prop_url, timeout=10)
-                if prop_resp.status_code == 200:
-                    prop_data = prop_resp.json()
-                    props = prop_data.get('PropertyTable', {}).get('Properties', [{}])[0]
-                    return props.get('IsomericSMILES')
-    except:
-        pass
-
+    response = requests.get(url, timeout=15)
+    if response.status_code == 200:
+        data = response.json()
+        return data['PropertyTable']['Properties'][0]['IsomericSMILES']
     return None
 
 
