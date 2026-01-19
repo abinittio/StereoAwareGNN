@@ -41,6 +41,52 @@ ELECTRONEGATIVITY = {
 
 POLAR_ATOMS = {7, 8, 15, 16}  # N, O, P, S
 
+# Bond feature dimensions
+BOND_TYPES = {
+    Chem.BondType.SINGLE: 0,
+    Chem.BondType.DOUBLE: 1,
+    Chem.BondType.TRIPLE: 2,
+    Chem.BondType.AROMATIC: 3,
+}
+
+BOND_STEREO = {
+    Chem.BondStereo.STEREONONE: 0,
+    Chem.BondStereo.STEREOANY: 1,
+    Chem.BondStereo.STEREOZ: 2,
+    Chem.BondStereo.STEREOE: 3,
+    Chem.BondStereo.STEREOCIS: 4,
+    Chem.BondStereo.STEREOTRANS: 5,
+}
+
+
+def get_bond_features(bond) -> List[float]:
+    """
+    Extract features for a single bond (7 features):
+    - Bond type one-hot (4): single, double, triple, aromatic
+    - Is conjugated (1)
+    - Is in ring (1)
+    - Stereo type (1): normalized 0-1
+    """
+    features = []
+
+    # Bond type one-hot (4 features)
+    bond_type = BOND_TYPES.get(bond.GetBondType(), 0)
+    bond_onehot = [0.0, 0.0, 0.0, 0.0]
+    bond_onehot[bond_type] = 1.0
+    features.extend(bond_onehot)
+
+    # Is conjugated
+    features.append(1.0 if bond.GetIsConjugated() else 0.0)
+
+    # Is in ring
+    features.append(1.0 if bond.IsInRing() else 0.0)
+
+    # Stereo type normalized
+    stereo = BOND_STEREO.get(bond.GetStereo(), 0)
+    features.append(stereo / 5.0)  # Normalize to 0-1
+
+    return features
+
 
 def get_atom_features(atom) -> List[float]:
     """
@@ -303,21 +349,29 @@ def mol_to_graph_enhanced(
 
     x = torch.tensor(x, dtype=torch.float)
 
-    # Get edges (bonds)
+    # Get edges (bonds) with features
     edge_indices = []
+    edge_features = []
     for bond in mol.GetBonds():
         i = bond.GetBeginAtomIdx()
         j = bond.GetEndAtomIdx()
+        bond_feat = get_bond_features(bond)
+
+        # Add both directions with same features
         edge_indices.append([i, j])
+        edge_features.append(bond_feat)
         edge_indices.append([j, i])
+        edge_features.append(bond_feat)
 
     if len(edge_indices) == 0:
         edge_index = torch.zeros((2, 0), dtype=torch.long)
+        edge_attr = torch.zeros((0, 7), dtype=torch.float)
     else:
         edge_index = torch.tensor(edge_indices, dtype=torch.long).t().contiguous()
+        edge_attr = torch.tensor(edge_features, dtype=torch.float)
 
-    # Create Data object
-    data = Data(x=x, edge_index=edge_index)
+    # Create Data object with edge features
+    data = Data(x=x, edge_index=edge_index, edge_attr=edge_attr)
 
     if y is not None:
         data.y = torch.tensor([y], dtype=torch.float)

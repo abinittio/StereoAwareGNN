@@ -147,14 +147,16 @@ class StereoAwareEncoder(nn.Module):
     """
     GNN encoder that handles 21 features (15 atomic + 6 stereo).
     Used for self-supervised pretraining on ZINC with stereoisomers.
+    Now with edge feature support (7 bond features).
     """
-    def __init__(self, node_features=21, hidden_dim=128, num_layers=4, dropout=0.2):
+    def __init__(self, node_features=21, hidden_dim=128, num_layers=4, dropout=0.2, edge_features=7):
         super().__init__()
 
         self.node_features = node_features
         self.hidden_dim = hidden_dim
+        self.edge_features = edge_features
 
-        # Initial embedding
+        # Initial node embedding
         self.input_embed = nn.Sequential(
             nn.Linear(node_features, hidden_dim),
             nn.BatchNorm1d(hidden_dim),
@@ -162,13 +164,21 @@ class StereoAwareEncoder(nn.Module):
             nn.Dropout(dropout)
         )
 
-        # GAT layers
+        # Edge embedding (bond features → hidden dim for attention)
+        self.edge_embed = nn.Sequential(
+            nn.Linear(edge_features, hidden_dim // 2),
+            nn.ReLU(),
+            nn.Linear(hidden_dim // 2, hidden_dim // 4)  # Match GAT head dim
+        )
+
+        # GAT layers with edge_dim support
         self.gat_layers = nn.ModuleList()
         self.gat_norms = nn.ModuleList()
 
         for _ in range(num_layers):
             self.gat_layers.append(
-                GATv2Conv(hidden_dim, hidden_dim // 4, heads=4, dropout=dropout, concat=True)
+                GATv2Conv(hidden_dim, hidden_dim // 4, heads=4, dropout=dropout,
+                          concat=True, edge_dim=hidden_dim // 4)
             )
             self.gat_norms.append(nn.BatchNorm1d(hidden_dim))
 
@@ -176,13 +186,19 @@ class StereoAwareEncoder(nn.Module):
         self.transformer = TransformerConv(hidden_dim, hidden_dim // 4, heads=4, dropout=dropout)
         self.transformer_norm = nn.BatchNorm1d(hidden_dim)
 
-    def forward(self, x, edge_index, batch):
+    def forward(self, x, edge_index, batch, edge_attr=None):
         # Initial embedding
         x = self.input_embed(x)
 
-        # GAT layers with residuals
+        # Embed edge features if provided
+        if edge_attr is not None and edge_attr.size(0) > 0:
+            edge_embed = self.edge_embed(edge_attr)
+        else:
+            edge_embed = None
+
+        # GAT layers with residuals and edge features
         for gat, norm in zip(self.gat_layers, self.gat_norms):
-            x_new = gat(x, edge_index)
+            x_new = gat(x, edge_index, edge_attr=edge_embed)
             x_new = norm(x_new)
             x_new = torch.nn.functional.relu(x_new)
             x = x + x_new

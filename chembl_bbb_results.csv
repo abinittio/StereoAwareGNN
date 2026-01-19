@@ -1,0 +1,13 @@
+target,type,description,n_compounds,bbb_plus_rate,mean_prob
+CHEMBL217,CNS,Dopamine D2 receptor,300,0.9866666666666667,0.964275
+CHEMBL224,CNS,Serotonin 1A (5-HT1A) receptor,300,0.9966666666666667,0.9552479
+CHEMBL225,CNS,Serotonin 2A (5-HT2A) receptor,300,0.99,0.8961321
+CHEMBL228,CNS,GABA-A receptor,300,1.0,0.9616796
+CHEMBL233,CNS,Mu opioid receptor,300,0.8433333333333334,0.8476141
+CHEMBL236,CNS,Kappa opioid receptor,300,0.7666666666666667,0.7743919
+CHEMBL251,CNS,Adenosine A2A receptor,300,0.91,0.7072316
+CHEMBL1867,CNS,Acetylcholinesterase,300,0.9833333333333333,0.91758466
+CHEMBL203,Peripheral,Epidermal growth factor receptor,300,0.9533333333333334,0.76206183
+CHEMBL279,Peripheral,Vascular endothelial growth factor receptor 2,300,0.9833333333333333,0.8266508
+CHEMBL4036,Peripheral,Hepatitis C virus NS5B,191,0.9790575916230366,0.80558217
+CHEMBL244,Peripheral,Coagulation factor X,300,0.79,0.6879284
