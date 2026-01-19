@@ -193,13 +193,14 @@ class BBBStereoV2Model(nn.Module):
             nn.Dropout(0.3)
         )
 
-        # Regression head (LogBB prediction)
-        self.regression_head = nn.Sequential(
-            nn.Linear(hidden_dim, hidden_dim // 2),
-            nn.GELU(),
-            nn.Dropout(0.2),
-            nn.Linear(hidden_dim // 2, 1)  # LogBB output
-        )
+        # Deeper regression head with residual (LogBB prediction)
+        self.reg_fc1 = nn.Linear(hidden_dim, hidden_dim)
+        self.reg_bn1 = nn.BatchNorm1d(hidden_dim)
+        self.reg_fc2 = nn.Linear(hidden_dim, hidden_dim // 2)
+        self.reg_bn2 = nn.BatchNorm1d(hidden_dim // 2)
+        self.reg_fc3 = nn.Linear(hidden_dim // 2, hidden_dim // 4)
+        self.reg_fc4 = nn.Linear(hidden_dim // 4, 1)  # LogBB output
+        self.reg_dropout = nn.Dropout(0.2)
 
         # Classification head (BBB+/BBB-)
         self.classification_head = nn.Sequential(
@@ -209,15 +210,30 @@ class BBBStereoV2Model(nn.Module):
             nn.Linear(hidden_dim // 2, 1)  # Probability output
         )
 
-    def forward(self, x, edge_index, batch):
-        # Get graph embedding from encoder
-        graph_embed = self.encoder(x, edge_index, batch)
+    def forward(self, x, edge_index, batch, edge_attr=None):
+        # Get graph embedding from encoder (with edge features if available)
+        graph_embed = self.encoder(x, edge_index, batch, edge_attr=edge_attr)
 
         # Shared representation
         shared_out = self.shared(graph_embed)
 
-        # Multi-task outputs
-        logBB = self.regression_head(shared_out)
+        # Deeper regression with residual connection
+        reg = self.reg_fc1(shared_out)
+        reg = self.reg_bn1(reg)
+        reg = torch.nn.functional.gelu(reg)
+        reg = self.reg_dropout(reg)
+        reg = reg + shared_out  # Residual connection
+
+        reg = self.reg_fc2(reg)
+        reg = self.reg_bn2(reg)
+        reg = torch.nn.functional.gelu(reg)
+        reg = self.reg_dropout(reg)
+
+        reg = self.reg_fc3(reg)
+        reg = torch.nn.functional.gelu(reg)
+        logBB = self.reg_fc4(reg)
+
+        # Classification
         prob = self.classification_head(shared_out)
 
         return logBB, prob

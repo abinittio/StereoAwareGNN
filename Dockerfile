@@ -5,8 +5,8 @@ WORKDIR /app
 # Install system dependencies
 RUN apt-get update && apt-get install -y libxrender1 libxext6 && rm -rf /var/lib/apt/lists/*
 
-# Install conda packages (rdkit must come from conda-forge)
-RUN conda install -c conda-forge rdkit=2023.09.1 -y && conda clean -afy
+# Install Python 3.10 and rdkit (fixed)
+RUN conda install python=3.10 rdkit -c conda-forge -y && conda clean -afy
 
 # Copy requirements and install pip packages
 COPY requirements_hf.txt .

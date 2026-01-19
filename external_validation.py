@@ -93,9 +93,11 @@ def convert_to_graphs(df):
 
 
 def load_model(model_path):
-    """Load trained stereo model."""
+    """Load trained stereo model (v2 with multi-task architecture)."""
+    from bbb_stereo_v2 import BBBStereoV2Model
+
     encoder = StereoAwareEncoder(node_features=21, hidden_dim=128, num_layers=4)
-    model = BBBStereoClassifier(encoder, hidden_dim=128)
+    model = BBBStereoV2Model(encoder, hidden_dim=128)
 
     state_dict = torch.load(model_path, map_location='cpu')
     model.load_state_dict(state_dict)
@@ -113,8 +115,9 @@ def evaluate(model, graphs, labels):
 
     with torch.no_grad():
         for batch in loader:
-            out = model(batch.x, batch.edge_index, batch.batch)
-            probs = torch.sigmoid(out).cpu().numpy().flatten()
+            # BBBStereoV2Model returns (logBB, classification_prob)
+            logBB, prob = model(batch.x, batch.edge_index, batch.batch)
+            probs = torch.sigmoid(prob).cpu().numpy().flatten()
             all_preds.extend(probs)
 
     preds = np.array(all_preds)
@@ -168,7 +171,7 @@ def main():
     ensemble_preds = []
 
     for fold in range(1, 6):
-        model_path = f'models/bbb_stereo_fold{fold}_best.pth'
+        model_path = f'models/bbb_stereo_v2_fold{fold}_best.pth'  # Use v2 models
 
         try:
             model = load_model(model_path)
@@ -183,6 +186,8 @@ def main():
 
         except FileNotFoundError:
             print(f"\nFold {fold}: Model not found")
+        except Exception as e:
+            print(f"\nFold {fold}: Error - {e}")
 
     # Ensemble (average predictions)
     if len(ensemble_preds) > 0:
