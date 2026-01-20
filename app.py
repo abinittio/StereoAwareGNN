@@ -7,7 +7,7 @@ GitHub: https://github.com/abinittio
 
 Streamlit Cloud Deployment Version - Self-Contained
 """
-APP_VERSION = "v2.3"  # Browser headers
+APP_VERSION = "v2.4"  # NIH CIR API
 
 import streamlit as st
 import pandas as pd
@@ -560,26 +560,19 @@ MOLECULES = {
 }
 
 
-def name_to_smiles_pubchem(name):
-    """Convert any chemical/drug name to SMILES using PubChem API."""
+def name_to_smiles_cir(name):
+    """Convert chemical name to SMILES using NIH Chemical Identifier Resolver."""
     if not name or len(name.strip()) < 2:
         return None
 
     clean_name = name.strip()
     encoded_name = urllib.parse.quote(clean_name)
-    url = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/{encoded_name}/property/IsomericSMILES/JSON"
-
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        'Accept': 'application/json',
-    }
+    url = f"https://cactus.nci.nih.gov/chemical/structure/{encoded_name}/smiles"
 
     try:
-        response = requests.get(url, headers=headers, timeout=15)
-        if response.status_code == 200:
-            data = response.json()
-            props = data['PropertyTable']['Properties'][0]
-            return props.get('IsomericSMILES') or props.get('SMILES')
+        response = requests.get(url, timeout=10)
+        if response.status_code == 200 and response.text and not response.text.startswith('<!'):
+            return response.text.strip().split('\n')[0]
     except:
         pass
     return None
@@ -605,8 +598,8 @@ def resolve_input(user_input):
     if key in MOLECULES:
         return MOLECULES[key][0], MOLECULES[key][1], None
 
-    # Try PubChem API for any drug/chemical name
-    smiles = name_to_smiles_pubchem(text)
+    # Try NIH CIR API for any drug/chemical name
+    smiles = name_to_smiles_cir(text)
     if smiles:
         mol = Chem.MolFromSmiles(smiles)
         if mol is not None:
