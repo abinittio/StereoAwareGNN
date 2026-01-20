@@ -7,7 +7,7 @@ GitHub: https://github.com/abinittio
 
 Streamlit Cloud Deployment Version - Self-Contained
 """
-APP_VERSION = "v2.2"  # Debug errors
+APP_VERSION = "v2.3"  # Browser headers
 
 import streamlit as st
 import pandas as pd
@@ -569,17 +569,19 @@ def name_to_smiles_pubchem(name):
     encoded_name = urllib.parse.quote(clean_name)
     url = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/{encoded_name}/property/IsomericSMILES/JSON"
 
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept': 'application/json',
+    }
+
     try:
-        response = requests.get(url, timeout=15)
+        response = requests.get(url, headers=headers, timeout=15)
         if response.status_code == 200:
             data = response.json()
             props = data['PropertyTable']['Properties'][0]
-            smiles = props.get('IsomericSMILES') or props.get('SMILES')
-            return smiles
-        else:
-            st.error(f"PubChem returned status {response.status_code}")
-    except Exception as e:
-        st.error(f"PubChem API error: {type(e).__name__}: {e}")
+            return props.get('IsomericSMILES') or props.get('SMILES')
+    except:
+        pass
     return None
 
 
