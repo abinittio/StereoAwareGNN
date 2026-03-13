@@ -30,6 +30,7 @@ import io
 import os
 import requests
 import urllib.parse
+import streamlit.components.v1 as components
 
 # Page config - MUST be first Streamlit command
 st.set_page_config(
@@ -673,30 +674,83 @@ def main():
     # Main input
     st.subheader("Enter Molecule")
 
-    col1, col2 = st.columns([4, 1])
-    with col1:
-        user_input = st.text_input(
-            "SMILES or drug name",
-            placeholder="e.g., Caffeine, Aspirin, Morphine, or enter SMILES",
-            label_visibility="collapsed"
-        )
-    with col2:
-        predict_btn = st.button("Predict", type="primary", use_container_width=True)
+    user_input = ""
+    predict_btn = False
 
-    # Quick examples
-    st.markdown("**Quick Examples:**")
-    examples = ["Caffeine", "Morphine", "THC", "Dopamine", "Glucose", "Atenolol"]
-    cols = st.columns(6)
-    for i, ex in enumerate(examples):
-        with cols[i]:
-            if st.button(ex, key=f"ex_{ex}", use_container_width=True):
-                st.session_state['mol_input'] = ex
-                st.rerun()
+    tab_text, tab_draw = st.tabs(["Type name / SMILES", "Draw structure (JSME)"])
 
-    if 'mol_input' in st.session_state:
-        user_input = st.session_state['mol_input']
-        del st.session_state['mol_input']
-        predict_btn = True
+    with tab_text:
+        col1, col2 = st.columns([4, 1])
+        with col1:
+            user_input = st.text_input(
+                "SMILES or drug name",
+                placeholder="e.g., Caffeine, Aspirin, Morphine, or enter SMILES",
+                label_visibility="collapsed"
+            )
+        with col2:
+            predict_btn = st.button("Predict", type="primary", use_container_width=True)
+
+        # Quick examples
+        st.markdown("**Quick Examples:**")
+        examples = ["Caffeine", "Morphine", "THC", "Dopamine", "Glucose", "Atenolol"]
+        cols = st.columns(6)
+        for i, ex in enumerate(examples):
+            with cols[i]:
+                if st.button(ex, key=f"ex_{ex}", use_container_width=True):
+                    st.session_state['mol_input'] = ex
+                    st.rerun()
+
+        if 'mol_input' in st.session_state:
+            user_input = st.session_state['mol_input']
+            del st.session_state['mol_input']
+            predict_btn = True
+
+    with tab_draw:
+        jsme_html = """
+        <html>
+        <head>
+            <script src="https://jsme-editor.github.io/dist/jsme/jsme.nocache.js"></script>
+        </head>
+        <body style="margin:0;padding:0;background:white;">
+            <div id="jsme_container" style="width:100%;"></div>
+            <div style="padding:8px;display:flex;gap:8px;align-items:center;">
+                <button onclick="getSmiles()"
+                    style="padding:8px 20px;background:#667eea;color:white;border:none;border-radius:6px;cursor:pointer;font-size:14px;">
+                    Get SMILES
+                </button>
+                <input id="smilesOut" type="text" readonly
+                    style="flex:1;padding:8px;border:1px solid #ddd;border-radius:6px;font-family:monospace;font-size:14px;"
+                    placeholder="Draw a molecule and click Get SMILES">
+                <button onclick="copySmiles()"
+                    style="padding:8px 16px;background:#667eea;color:white;border:none;border-radius:6px;cursor:pointer;font-size:14px;">
+                    Copy
+                </button>
+            </div>
+            <script>
+                var jsmeApplet;
+                function jsmeOnLoad() {
+                    jsmeApplet = new JSApplet.JSME("jsme_container", "100%", "420px");
+                }
+                function getSmiles() {
+                    if (jsmeApplet) {
+                        var s = jsmeApplet.smiles();
+                        document.getElementById('smilesOut').value = s || '';
+                    }
+                }
+                function copySmiles() {
+                    var el = document.getElementById('smilesOut');
+                    if (el.value) {
+                        navigator.clipboard.writeText(el.value);
+                        el.style.borderColor = '#38a169';
+                        setTimeout(function(){ el.style.borderColor = '#ddd'; }, 1500);
+                    }
+                }
+            </script>
+        </body>
+        </html>
+        """
+        components.html(jsme_html, height=500)
+        st.info("Draw your molecule above, click **Get SMILES**, then **Copy** and paste into the text input tab to predict.")
 
     # Stereo enumeration option
     enumerate_stereo = st.checkbox("Enumerate stereoisomers", value=True,
