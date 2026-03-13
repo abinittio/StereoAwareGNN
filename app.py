@@ -713,16 +713,16 @@ def main():
             <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
             <style>
                 * { box-sizing: border-box; margin: 0; padding: 0; }
-                body { font-family: 'Inter', -apple-system, sans-serif; background: #f8fafc; }
+                body { font-family: 'Inter', -apple-system, sans-serif; background: #f0fdfa; }
                 .editor-wrap {
                     background: white;
                     border-radius: 16px;
                     box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
                     overflow: hidden;
-                    border: 1px solid #e2e8f0;
+                    border: 1px solid #ccfbf1;
                 }
                 .editor-header {
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
                     padding: 12px 20px;
                     display: flex; align-items: center; gap: 10px;
                 }
@@ -731,11 +731,11 @@ def main():
                 }
                 .editor-header .dot { width: 8px; height: 8px; border-radius: 50%; }
                 .dot-r { background: #ff5f57; } .dot-y { background: #febc2e; } .dot-g { background: #28c840; }
-                #jsme_container { border-bottom: 1px solid #e2e8f0; }
+                #jsme_container { border-bottom: 1px solid #ccfbf1; }
                 .controls {
                     padding: 14px 20px;
                     display: flex; gap: 10px; align-items: center;
-                    background: #f8fafc;
+                    background: #f0fdfa;
                 }
                 .btn {
                     padding: 10px 22px;
@@ -747,26 +747,26 @@ def main():
                 }
                 .btn:active { transform: scale(0.97); }
                 .btn-primary {
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white; box-shadow: 0 2px 8px rgba(102,126,234,0.35);
+                    background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
+                    color: white; box-shadow: 0 2px 8px rgba(20,184,166,0.35);
                 }
-                .btn-primary:hover { box-shadow: 0 4px 14px rgba(102,126,234,0.45); }
+                .btn-primary:hover { box-shadow: 0 4px 14px rgba(20,184,166,0.45); }
                 .btn-copy {
-                    background: white; color: #667eea;
-                    border: 1.5px solid #667eea;
+                    background: white; color: #0f766e;
+                    border: 1.5px solid #14b8a6;
                 }
-                .btn-copy:hover { background: #f0f0ff; }
+                .btn-copy:hover { background: #f0fdfa; }
                 .btn-copy.copied { background: #f0fdf4; color: #16a34a; border-color: #16a34a; }
                 .smiles-out {
                     flex: 1; padding: 10px 14px;
-                    border: 1.5px solid #e2e8f0; border-radius: 10px;
+                    border: 1.5px solid #ccfbf1; border-radius: 10px;
                     font-family: 'JetBrains Mono', 'Fira Code', monospace;
-                    font-size: 13px; color: #334155;
+                    font-size: 13px; color: #134e4a;
                     background: white; outline: none;
                     transition: border-color 0.2s ease;
                 }
-                .smiles-out:focus { border-color: #667eea; }
-                .smiles-out::placeholder { color: #94a3b8; }
+                .smiles-out:focus { border-color: #14b8a6; }
+                .smiles-out::placeholder { color: #5eead4; }
             </style>
         </head>
         <body>
