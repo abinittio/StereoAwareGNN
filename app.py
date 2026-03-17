@@ -643,11 +643,15 @@ def main():
             st.metric("Sensitivity", "97.96%")
             st.metric("Specificity", "65.25%")
         else:
-            st.warning(f"Mode: {model_info['name']}")
+            st.info(f"Mode: Descriptor-Based (Fast)")
             st.markdown("""
             <div class="info-box">
-            Using descriptor-based prediction.<br>
-            For full GNN accuracy, upload model weights to models/ folder.
+            This web app uses a fast descriptor-based model for instant predictions.<br><br>
+            <b>Need full GNN accuracy (0.96 AUC)?</b><br>
+            The stereo-aware GNN model with explicit 3D chirality encoding is available on request.
+            Post your SMILES on our <a href="https://github.com/abinittio/StereoAwareGNN/discussions" target="_blank">GitHub Discussions</a>
+            and we'll run the full model and reply with results.<br><br>
+            <b>Contact:</b> nabil@dis-solved.com
             </div>
             """, unsafe_allow_html=True)
 
