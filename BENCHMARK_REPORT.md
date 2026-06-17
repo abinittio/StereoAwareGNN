@@ -2,6 +2,19 @@
 
 **Generated:** 2025-12-22 01:46
 
+> **Correction (2026)**
+>
+> The "state-of-the-art, 0.9612 external AUC" claim below does not hold up under
+> leakage-controlled evaluation and is retained here only for transparency.
+> The 0.9612 was measured by training on BBBP and testing on B3DB, but **B3DB
+> overlaps BBBP by ~22%**, so it is not true external validation, and the
+> competitor numbers it is compared against were measured under different (scaffold)
+> protocols, so the comparison is not like-for-like. Under a matched scaffold split
+> the model scores **~0.83-0.84 AUC**, is competitive with but does **not** beat a
+> simple ECFP + random-forest baseline, is over-confident (ECE ~0.11), and is
+> functionally **stereo-blind** (identical predictions for enantiomers). See the
+> full reproducible audit: https://github.com/abinittio/bbb-honest-eval
+
 ## Executive Summary
 
 StereoGNN-BBB V2 achieves **state-of-the-art performance** on external validation (B3DB, 7,807 compounds):
