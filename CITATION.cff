@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+title: "StereoGNN-BBB: protocol-controlled benchmarking of blood-brain barrier permeability models"
+message: "If you use this benchmark, the corrected figures, or the leakage analysis, please cite it."
+type: software
+authors:
+  - family-names: Yasini-Ardekani
+    given-names: Nabil
+    orcid: ""
+repository-code: "https://github.com/abinittio/StereoAwareGNN"
+abstract: >-
+  A stereochemistry-aware graph neural network for blood-brain barrier
+  permeability prediction, benchmarked against seven alternative architectures
+  (ChemBERTa, SMILES-CNN, SMILES-LSTM, ECFP+RF, ECFP+LogReg, descriptor MLP,
+  ZINC-pretrained GNN) under random, scaffold and leakage-controlled external
+  protocols. The study shows that evaluation protocol affects reported accuracy
+  more than architecture choice: the best random-split model loses 0.21 AUC
+  externally while a fingerprint random forest is nearly unaffected, and on
+  novel chemistry every architecture approaches chance. Includes a documented
+  retraction of a previously advertised 0.9612 external AUC that was produced
+  under evaluation leakage.
+keywords:
+  - blood-brain barrier
+  - graph neural networks
+  - data leakage
+  - model evaluation
+  - cheminformatics
+  - ADMET
+license: MIT
