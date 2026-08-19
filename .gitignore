@@ -13,3 +13,5 @@ data/
 notebooks/
 training_output.log
 nul
+
+.claude/
